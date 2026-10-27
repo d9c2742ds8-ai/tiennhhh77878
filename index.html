@@ -25,7 +25,7 @@
 <p><br><br></p>    
 <div class="zhengti">
     <div class="juzuo1">
-        V25102128 (Mong Tien Nhieu)
+        V25090035 (Kaelen Nguyen)
     </div>
     <div class="saomatishi juzhong" id="biaoti">
         将二维码对准扫描器扫码进出场    
@@ -75,53 +75,52 @@
             <div id="dateTime3">00:00</div>
 
             <script>
-    // Cập nhật giờ hệ thống (Dòng trên mã QR)
-    function updateClock() {
-        const now = new Date();
-        const y = now.getFullYear();
-        const m = String(now.getMonth() + 1).padStart(2, '0');
-        const d = String(now.getDate()).padStart(2, '0');
-        const hh = String(now.getHours()).padStart(2, '0');
-        const mm = String(now.getMinutes()).padStart(2, '0');
-        const ss = String(now.getSeconds()).padStart(2, '0');
-        document.getElementById('current-time').textContent = `${y}-${m}-${d} ${hh}:${mm}:${ss}`;
+                let startTime = localStorage.getItem("startTime");
+                if (!startTime) {
+                    startTime = Date.now();
+                    localStorage.setItem("startTime", startTime);
+                } else {
+                    startTime = parseInt(startTime);
+                }
+
+                setInterval(function () {
+                    let diff = Math.floor((Date.now() - startTime) / 1000) % (12 * 60 * 60); 
+                    let mins = Math.floor((diff % 3600) / 60);
+                    let secs = diff % 60;
+                    document.getElementById('dateTime3').innerHTML = (mins < 10 ? '0' : '') + mins + ':' + (secs < 10 ? '0' : '') + secs;
+                }, 1000);
+
+                let clickTimestamps = [];
+                window.addEventListener('DOMContentLoaded', function () {
+                    const reloadLink = document.querySelector('.shuaxinerweima');
+                    if (reloadLink) {
+                        reloadLink.addEventListener('click', function (e) {
+                            e.preventDefault(); 
+                            const now = Date.now();
+                            clickTimestamps = clickTimestamps.filter(ts => now - ts < 5000);
+                            clickTimestamps.push(now);
+
+                            if (clickTimestamps.length >= 3) {
+                                startTime = Date.now();
+                                localStorage.setItem("startTime", startTime);
+                                clickTimestamps = []; 
+                            }
+                        });
+                    }
+                });
+            </script>
+        </div>
+    </div>
+
+    <div class="dierhang">
+        尊敬的员工您好，您已进入企业涉密区域，出于企业安全考虑，您的手机摄像头将被禁止拍摄，感谢您的配合。
+    </div>
+</div>
+
+<script>
+    if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.register('sw.js');
     }
-
-    // Logic đếm tăng (Count-up) - Tự động reset sau 12 tiếng
-    let startTime = localStorage.getItem("qrStartTimeCounter");
-    if (!startTime) {
-        startTime = Date.now();
-        localStorage.setItem("qrStartTimeCounter", startTime);
-    } else {
-        startTime = parseInt(startTime);
-    }
-
-    function updateTimer() {
-        let now = Date.now();
-        let diffInSecs = Math.floor((now - startTime) / 1000);
-        
-        // Reset sau 12 tiếng (43200 giây)
-        if (diffInSecs >= 43200) {
-            startTime = Date.now();
-            localStorage.setItem("qrStartTimeCounter", startTime);
-            diffInSecs = 0;
-        }
-
-        const hrs = Math.floor(diffInSecs / 3600);
-        const mins = Math.floor((diffInSecs % 3600) / 60);
-        const secs = diffInSecs % 60;
-
-        let display = hrs > 0 
-            ? `${hrs}:${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}`
-            : `${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
-        
-        document.getElementById('timer-up').textContent = display;
-    }
-
-    setInterval(updateClock, 1000);
-    setInterval(updateTimer, 1000);
-    updateClock();
-    updateTimer();
 </script>
 
 </body>
